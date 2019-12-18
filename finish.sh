@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 VERSION="$1"
 
@@ -7,27 +7,31 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
+INSTALL_PATH="$HOME/.asdf/installs/ruby/$VERSION"
+RUBY_INSTALLER_PATH=$(find /var/folders/ -type directory -name "ruby-$VERSION" 2>&- | head -n 1)
 
-RUBY_VERSION="ruby-$VERSION"
-RUBY_INSTALLER_DIR=$(find /var/folders/ -type directory -name $RUBY_VERSION 2>&- | head -n 1)
-ASDF_RUBY_INSTALL_DIR="$HOME/.asdf/installs/ruby/$VERSION"
-if [ ! -d "$RUBY_INSTALLER_DIR" ]; then
-    echo "Install dir could not be found!";
+if [ ! -d "$RUBY_INSTALLER_PATH" ]; then
+    echo "Ruby installer could not be found!";
     exit 1;
 fi
 
-OPENSSL_INSTALL_DIR=$(find $(dirname $RUBY_INSTALLER_DIR) -type directory -name "openssl*" 2>&- | head -n 1)
+OPENSSL_INSTALLER_PATH=$(find $(dirname $RUBY_INSTALLER_PATH) -type directory -name "openssl*" 2>&- | head -n 1)
+if [ ! -d "$OPENSSL_INSTALLER_PATH" ]; then
+    echo "OpenSSL installer could not be found!";
+    exit 1;
+fi
 
-mkdir -p "$ASDF_RUBY_INSTALL_DIR/bin" "$ASDF_RUBY_INSTALL_DIR/lib" "$ASDF_RUBY_INSTALL_DIR/include"
+echo "Creating required directories..."
+mkdir -p "$INSTALL_PATH/bin" "$INSTALL_PATH/lib" "$INSTALL_PATH/include"
 
 echo "Installing openssl..."
-make --directory $OPENSSL_INSTALL_DIR install
+make --directory $OPENSSL_INSTALLER_PATH install
 
 echo "Installing ruby..."
-make --directory $RUBY_INSTALLER_DIR install
+make --directory $RUBY_INSTALLER_PATH install
 
 echo "Setting up certificates..."
-SSL_CERTS_FILE="$ASDF_RUBY_INSTALL_DIR/openssl/ssl/cert.pem"
+SSL_CERTS_FILE="$INSTALL_PATH/openssl/ssl/cert.pem"
 security find-certificate -a -p /Library/Keychains/System.keychain > $SSL_CERTS_FILE
 security find-certificate -a -p /System/Library/Keychains/SystemRootCertificates.keychain >> $SSL_CERTS_FILE
 
