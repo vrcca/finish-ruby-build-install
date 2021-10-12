@@ -7,6 +7,8 @@ if [ $# -ne 1 ]; then
     exit 1
 fi
 
+echo "Trying to finish ruby install for '$VERSION'";
+
 INSTALL_PATH="$HOME/.asdf/installs/ruby/$VERSION"
 RUBY_INSTALLER_PATH=$(find /var/folders/ -type directory -name "ruby-$VERSION" 2>&- | head -n 1)
 
